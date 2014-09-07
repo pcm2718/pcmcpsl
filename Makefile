@@ -18,6 +18,7 @@ pcmcpsl_lex_demo_test: bin/pcmcpsl_lex_demo test/lexical_test.cpsl test/tictacto
 #	$(info )
 
 bin/pcmcpsl_lex_demo: src/pcmcpsl.yy.c
+	mkdir -p bin
 	gcc -lfl src/pcmcpsl.yy.c -o bin/pcmcpsl_lex_demo
 
 src/pcmcpsl.yy.c: src/pcmcpsl.lex
