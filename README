@@ -1,1 +1,4 @@
-The lexer demo executable is located at bin/pcmcpsl_lex_demo .
+The lexer demo executable is located at bin/pcmcpsl_lex_demo. Remember
+to run 'make' or 'make all' first to build the project. 'make test'
+runs 'test/lexical_test.cpsl' and 'test/tictactoe.cpsl' through the
+lexer.

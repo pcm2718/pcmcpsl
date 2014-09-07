@@ -6,8 +6,16 @@ all: bin/pcmcpsl_lex_demo
 
 test: pcmcpsl_lex_demo_test
 
-pcmcpsl_lex_demo_test: bin/pcmcpsl_lex_demo test/lexical_test.cpsl
+pcmcpsl_lex_demo_test: bin/pcmcpsl_lex_demo test/lexical_test.cpsl test/tictactoe.cpsl
+#	$(info Testing with test/lexical_test.cpsl:)
+#	$(info )
 	bin/pcmcpsl_lex_demo < test/lexical_test.cpsl
+#	$(info )
+#	$(info )
+#	$(info Testing with test/tictactoe.cpsl:)
+	bin/pcmcpsl_lex_demo < test/tictactoe.cpsl
+#	$(info )
+#	$(info )
 
 bin/pcmcpsl_lex_demo: src/pcmcpsl.yy.c
 	gcc -lfl src/pcmcpsl.yy.c -o bin/pcmcpsl_lex_demo

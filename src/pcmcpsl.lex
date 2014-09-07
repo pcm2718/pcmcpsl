@@ -30,32 +30,32 @@
 %}  
 %%
 
-'([^\n]|\\n)'                   { printf("Character constant detected: %s .\n", yytext); }
+'([ -\[]|[\]-~]|(\\[ -~]))'                                     { printf("Character constant detected: %s .\n", yytext); }
 
-\"([ -!]|[#-~])*\"              { printf("String constant detected: %s .\n", yytext); }
+\"([ -!]|[#-\[]|[\]-~]|(\\([ -!]|[#-~])))*\"                    { printf("String constant detected: %s .\n", yytext); }
 
-[\t ]+                          /* Ignore whitespace. */ ;
+[\t ]+                                                          /* Ignore (consume) whitespace. */ ;
 
 array |
-ARRAY                           { printf("Keyword detected: ARRAY .\n"); }
+ARRAY                                                           { printf("Keyword detected: ARRAY .\n"); }
 
 begin |
-BEGIN                           { printf("Keyword detected: BEGIN .\n"); }
+BEGIN                                                           { printf("Keyword detected: BEGIN .\n"); }
 
 chr |
-CHR                           { printf("Keyword detected: CHR .\n"); }
+CHR                                                             { printf("Keyword detected: CHR .\n"); }
 
 const |
-CONST                           { printf("Keyword detected: CONST .\n"); }
+CONST                                                           { printf("Keyword detected: CONST .\n"); }
 
 do |
-DO                           { printf("Keyword detected: DO .\n"); }
+DO                                                              { printf("Keyword detected: DO .\n"); }
 
 downto |
-DOWNTO                           { printf("Keyword detected: DOWNTO .\n"); }
+DOWNTO                                                          { printf("Keyword detected: DOWNTO .\n"); }
 
 else |
-ELSE                           { printf("Keyword detected: ELSE .\n"); }
+ELSE                                                            { printf("Keyword detected: ELSE .\n"); }
 
 elseif |
 ELSEIF                           { printf("Keyword detected: ELSEIF .\n"); }
