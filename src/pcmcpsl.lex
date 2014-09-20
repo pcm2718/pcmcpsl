@@ -138,7 +138,7 @@ WRITE                                                           { printf("Keywor
 
 &                                                               { printf("Operator or delimiter detected: & .\n"); }
 
-\                                                               { printf("Operator or delimiter detected: \\ .\n"); }
+|                                                               { printf("Operator or delimiter detected: | .\n"); }
 
 ~                                                               { printf("Operator or delimiter detected: ~ .\n"); }
 
