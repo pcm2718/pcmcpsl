@@ -16,7 +16,7 @@
   */
 
   /*
-    This is the Lex file for the lexical analysis phase of CPSL.
+    This is the Lex file for the lexical analysis phase of PCMCPSL.
   */
 
   /*
