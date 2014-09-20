@@ -196,6 +196,116 @@ statement_sequence_remainder_star:
 		statement_sequence_remainder_star SEMI statement
 	|	
 	;
+
+// Statement
+statement:	
+		assignment
+	|	if_statement
+	|	while_statement
+	|	repeat_statement
+	|	for_statement
+	|	stop_statement
+	|	return_statement
+	|	read_statement
+	|	write_statement
+	|	procedure_call
+	|	null_statement
+		;
+
+// Assignment
+assignment:	
+		l_value ASSIGN expression
+	;
+
+// IfStatement
+if_statement:	
+		IF expression THEN statement_sequence elseif_list_star else_statement_opt END
+	;
+
+elseif_list_star:
+		elseif_list_star ELSEIF expression THEN statement_sequence
+	|	
+	;
+
+else_statement_opt:
+		ELSE statement_sequence
+	|	
+	;
+
+// WhileStatement
+while_statement:
+		WHILE expression DO statement_sequence END
+	;
+
+// RepeatStatement
+repeat_statement:
+		REPEAT statement_sequence UNTIL expression
+	;
+
+// ForStatement
+for_statement:	
+		FOR IDENTIFIER ASSIGN expression to_or_downto expression DO statement_sequence END
+	;
+
+to_or_downto:
+		TO
+	|	DOWNTO
+	;
+
+// StopeStatement
+stop_statement:	
+		STOP
+	;
+
+// ReturnStatement
+return_statement:
+		RETURN expression_opt
+	;
+
+expression_opt:	
+		expression
+	|	
+	;
+
+// ReadStatement
+read_statement:	
+		READ OPAREN l_value read_statement_l_value_remainder_star CPAREN
+	;
+
+read_statement_l_value_remainder_star:
+		read_statement_l_value_remainder_star COMMA l_value
+	|	
+	;
+
+// WriteStatement, move all other statement to new list notation.
+write_statement:
+		WRITE OPAREN expression wr_expression_star CPAREN
+	;
+
+wr_expression_star:
+		wr_expression_star COMMA expression
+	|	
+	;
+
+// ProcedureCall
+procedure_call:	
+		IDENTIFIER OPAREN pc_expression_list_opt CPAREN
+	;
+
+pc_expression_list_opt:
+		expression pc_expression_star
+	|	
+	;
+
+pc_expression_star:
+		pc_expression_star COMMA expression
+	|	
+	;
+
+// NullStatement
+null_statement:	
+		
+	;
 %%
 
 //extern FILE* yyin;
