@@ -1,4 +1,4 @@
-The lexer demo executable is located at bin/pcmcpsl_lex_demo. Remember
-to run 'make' or 'make all' first to build the project. 'make test'
-runs 'test/lexical_test.cpsl' and 'test/tictactoe.cpsl' through the
-lexer.
+The syntax analysis demo executable is located at
+bin/pcmcpsl_syntax_analysis_demo. Remember to run 'make' or 'make all'
+first to build the project. 'make test' runs an assortment of test
+files throught the syntax analyzer.

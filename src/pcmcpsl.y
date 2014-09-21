@@ -38,7 +38,7 @@
 //			Operator Tokens
 %token PLUS MINUS TIMES DIVIDE AND OR NOT EQUAL
 %token DIAMOND LT LEQ GT GEQ DOT COMMA COLON
-%token SEMI OPAREN CPAREN OBRACKET CBRACKET ASSIGN
+%token SEMI OPAREN CPAREN OBRACKET CBRACKET ASSIGN MODULO
 
 //			Constant Tokens
 %token OCTINTCONST HEXINTCONST DECINTCONST CHARCONST STRCONST
@@ -91,111 +91,111 @@ const_decl_assign_list_plus:
 proc_decl:	
 		PROCEDURE IDENTIFIER OPAREN formal_parameters CPAREN SEMI FORWARD SEMI
 	|	PROCEDURE IDENTIFIER OPAREN formal_parameters CPAREN SEMI body SEMI
-	;
+		;
 
 // FunctionDecl
 func_decl:	
 		FUNCTION IDENTIFIER OPAREN formal_parameters CPAREN COLON type SEMI FORWARD SEMI
 	|	FUNCTION IDENTIFIER OPAREN formal_parameters CPAREN COLON type SEMI body SEMI
-	;
+		;
 
 // FormalParameters
 formal_parameters:
 		var_opt ident_list COLON type remaining_fp_list_star
 	|	
-	;
+		;
 
 remaining_fp_list_star:
 		remaining_fp_list_star SEMI var_opt ident_list COLON type
 	|	
-	;
+		;
 
 var_opt:	
 		VAR
 	|	
-	;
+		;
 
 // Body
 body:		
 		const_decl_opt type_decl_opt var_decl_opt block
-	;
+		;
 
 // Block
 block:		
 		BEGIN statement_sequence END
-	;
+		;
 
 // Type Declarations
 
 // TypeDecl
 type_decl:	
 		TYPE type_decl_list_plus
-	;
+		;
 
 type_decl_list_plus:
 		type_decl_list_plus IDENTIFIER EQUAL type SEMI
 	|	IDENTIFIER EQUAL type SEMI
-	;
+		;
 
 // Type (do not confuse with the terminal TYPE)
 type:		
 		simple_type
 	|	record_type
 	|	array_type
-	;
+		;
 
 // SimpleType
 simple_type:	
 		IDENTIFIER
-	;
+		;
 
 // RecordType
 record_type:
 		RECORD record_ident_type_list_star END
-	;
+		;
 
 record_ident_type_list_star:
 		record_ident_type_list_star ident_list COLON type SEMI
 	|	
-	;
+		;
 
 // ArrayType
 array_type:	
 		ARRAY OBRACKET expression COLON expression CBRACKET OF type
-	;
+		;
 
 // IdentList
 ident_list:	
 		IDENTIFIER ident_list_remainder_star
-	;
+		;
 
 ident_list_remainder_star:
 		ident_list_remainder_star COMMA IDENTIFIER
-	;
+		;
 
 // Variable Declarations
 
 // VarDecl
 var_decl:	
 		VAR var_decl_list_plus
-	;
+		;
 
 var_decl_list_plus:
 		var_decl_list_plus ident_list COLON type SEMI
 	|	ident_list COLON type SEMI
-	;
+		;
 
 // CPSL Statements
 
 // StatementSequence
 statement_sequence:
 		statement statement_sequence_remainder_star
-	;
+		;
 
 statement_sequence_remainder_star:
 		statement_sequence_remainder_star SEMI statement
 	|	
-	;
+		;
 
 // Statement
 statement:	
@@ -215,97 +215,153 @@ statement:
 // Assignment
 assignment:	
 		l_value ASSIGN expression
-	;
+		;
 
 // IfStatement
 if_statement:	
 		IF expression THEN statement_sequence elseif_list_star else_statement_opt END
-	;
+		;
 
 elseif_list_star:
 		elseif_list_star ELSEIF expression THEN statement_sequence
 	|	
-	;
+		;
 
 else_statement_opt:
 		ELSE statement_sequence
 	|	
-	;
+		;
 
 // WhileStatement
 while_statement:
 		WHILE expression DO statement_sequence END
-	;
+		;
 
 // RepeatStatement
 repeat_statement:
 		REPEAT statement_sequence UNTIL expression
-	;
+		;
 
 // ForStatement
 for_statement:	
 		FOR IDENTIFIER ASSIGN expression to_or_downto expression DO statement_sequence END
-	;
+		;
 
 to_or_downto:
 		TO
 	|	DOWNTO
-	;
+		;
 
 // StopeStatement
 stop_statement:	
 		STOP
-	;
+		;
 
 // ReturnStatement
 return_statement:
 		RETURN expression_opt
-	;
+		;
 
 expression_opt:	
 		expression
 	|	
-	;
+		;
 
 // ReadStatement
 read_statement:	
 		READ OPAREN l_value read_statement_l_value_remainder_star CPAREN
-	;
+		;
 
 read_statement_l_value_remainder_star:
 		read_statement_l_value_remainder_star COMMA l_value
 	|	
-	;
+		;
 
 // WriteStatement, move all other statement to new list notation.
 write_statement:
 		WRITE OPAREN expression wr_expression_star CPAREN
-	;
+		;
 
 wr_expression_star:
 		wr_expression_star COMMA expression
 	|	
-	;
+		;
 
 // ProcedureCall
 procedure_call:	
 		IDENTIFIER OPAREN pc_expression_list_opt CPAREN
-	;
+		;
 
 pc_expression_list_opt:
 		expression pc_expression_star
 	|	
-	;
+		;
 
 pc_expression_star:
 		pc_expression_star COMMA expression
 	|	
-	;
+		;
 
 // NullStatement
 null_statement:	
 		
+		;
+
+// Expressions, fix the exp hack later.
+
+expression:	
+		e
+		;
+
+e:		
+		e OR e
+	|	e AND e
+	|	e EQUAL e
+	|	e DIAMOND e
+	|	e LEQ e
+	|	e GEQ e
+	|	e LT e
+	|	e GT e
+	|	e PLUS e
+	|	e MINUS e
+	|	e TIMES e
+	|	e DIVIDE e
+	|	e MODULO e
+	|	NOT e
+	|	MINUS e
+	|	OPAREN e CPAREN
+	|	IDENTIFIER OPAREN // Fix this later CPAREN
+	|	CHR e
+	|	ORD e
+	|	PRED e
+	|	SUCC e
+	|	l_value
+		;
+
+expression_star_opt:
+		e expression_star
+	|	
+		;
+
+expression_star:
+		expression_star COMMA e
+	|	
+		;
+
+// LValue
+l_value:	
+		IDENTIFIER l_value_dot_star
 	;
+
+l_value_dot_star:
+		l_value_dot_star dot_identifier_or_index
+		;
+
+dot_identifier_or_index:
+		dot_identifier_or_index DOT IDENTIFIER
+	|	dot_identifier_or_index OBRACKET e CBRACKET
+	|	
+		;
 %%
 
 //extern FILE* yyin;
@@ -318,5 +374,5 @@ main()
 yyerror(prbstr)
 {
     // Put in a Haiku error later.
-    printf("Error detected.\n\n\tIf at first you don't succeed, give up and let a human handle it. -- PCMCPSL");
+    printf("Error detected.\n\n\tIf at first you don't succeed, give up and let a human handle it. -- PCMCPSL\n\n");
 }

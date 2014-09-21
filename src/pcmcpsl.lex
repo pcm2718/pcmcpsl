@@ -138,7 +138,7 @@ WRITE                                                           { printf("Keywor
 
 &                                                               { printf("Operator or delimiter detected: & .\n"); }
 
-|                                                               { printf("Operator or delimiter detected: | .\n"); }
+\|                                                               { printf("Operator or delimiter detected: | .\n"); }
 
 ~                                                               { printf("Operator or delimiter detected: ~ .\n"); }
 
@@ -187,7 +187,9 @@ $[^\n]*                                                         { printf("Commen
 .                                                               { printf("Unknown lexeme detected on line %i: %s .\n", linenum, yytext); }
 %%
 
+								/*
 main ()
 {
   yylex();
 }
+								*/

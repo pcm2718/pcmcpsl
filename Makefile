@@ -20,23 +20,25 @@ all: bin/pcmcpsl_syntax_analysis_demo
 
 test: pcmcpsl_syntax_analysis_demo_test
 
-pcmcpsl_syntax_analysis_demo_test: bin/pcmcpsl_syntax_analysis_demo test/lexical_test.cpsl test/tictactoe.cpsl
+pcmcpsl_syntax_analysis_demo_test: all
 #	$(info Testing with test/lexical_test.cpsl:)
 #	$(info )
 #	bin/pcmcpsl_syntax_analysis_demo < test/lexical_test.cpsl
 #	$(info )
 #	$(info )
 #	$(info Testing with test/tictactoe.cpsl:)
-	bin/pcmcpsl_lex_demo < test/tictactoe.cpsl
+	bin/pcmcpsl_syntax_analysis_demo < test/tictactoe.cpsl
 #	$(info )
 #	$(info )
 
-bin/pcmcpsl_syntax_analysis_demo: src/pcmcpsl.yy.c src/pcmcpsl.tab.c
+bin/pcmcpsl_syntax_analysis_demo: src/pcmcpsl.yy.c src/pcmcpsl.tab.c src/pcmcpsl.tab.h
 	mkdir -p bin
 	gcc -lfl src/pcmcpsl.yy.c src/pcmcpsl.tab.c -o bin/pcmcpsl_syntax_analysis_demo
 
-src/lex.yy.c: src/pcmcpsl.lex src/pcmcpsl.tab.h
-	flex -o src/lex.yy.c src/pcmcpsl.lex
+src/pcmcpsl.yy.c: src/pcmcpsl.lex src/pcmcpsl.tab.h
+	flex -o src/pcmcpsl.yy.c src/pcmcpsl.lex
 
 src/pcmcpsl.tab.c src/pcmcpsl.tab.h: src/pcmcpsl.y
-	bison -d src/pcmcpsl.y
+	cd src; \
+	bison -d pcmcpsl.y; \
+	cd ..
