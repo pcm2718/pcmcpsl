@@ -37,12 +37,14 @@
 //			Identifier Token
 %token IDENTIFIER
 
-//			Operator Tokens (sans math)
-%token PLUS MINUS TIMES DIVIDE AND OR NOT EQUAL
-%token DIAMOND LT LEQ GT GEQ DOT COMMA COLON
-%token SEMI OPAREN CPAREN OBRACKET CBRACKET ASSIGN MODULO
-
-//			Math Operator Tokens
+//			Operator Tokens
+%left OR AND
+%right NOT
+%nonassoc EQUAL DIAMOND LT LEQ GT GEQ
+%left PLUS MINUS
+%left TIMES DIVIDE MODULO
+%right NEG
+%token DOT COMMA COLON SEMI OPAREN CPAREN OBRACKET CBRACKET ASSIGN
 
 //			Constant Tokens
 %token OCTINTCONST HEXINTCONST DECINTCONST CHARCONST STRCONST
@@ -294,7 +296,7 @@ e:
 	|	exp DIVIDE exp
 	|	exp MODULO exp
 	|	NOT exp
-	|	MINUS exp
+	|	MINUS %prec NEG exp
 	|	OPAREN exp CPAREN
 	|	IDENTIFIER OPAREN exp_star_opt CPAREN
 	|	CHR exp
