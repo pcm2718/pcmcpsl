@@ -24,172 +24,170 @@
   */
 
   /*
+    Include the yacc generated header.
+  */
+  #include "pcmcpsl.tab.h"
+
+  /*
     Declare the line counter and initalize it to zero.
   */
   unsigned int linenum = 1;
 %}  
 %%
 
-'([ -\[]|[\]-~]|(\\[ -~]))'                                     { printf("Character constant detected: %s .\n", yytext); }
+'([ -\[]|[\]-~]|(\\[ -~]))'                                     { return CHARCONST; }
 
-\"([ -!]|[#-\[]|[\]-~]|(\\([ -!]|[#-~])))*\"                    { printf("String constant detected: %s .\n", yytext); }
+\"([ -!]|[#-\[]|[\]-~]|(\\([ -!]|[#-~])))*\"                    { return STRCONST; }
 
 [\t ]+                                                          /* Ignore (consume) whitespace. */ ;
 
 array |
-ARRAY                                                           { printf("Keyword detected: ARRAY .\n"); }
+ARRAY                                                           { return ARRAY; }
 
 begin |
-BEGIN                                                           { printf("Keyword detected: BEGIN .\n"); }
+BEGIN                                                           { return BEGINX; }
 
 chr |
-CHR                                                             { printf("Keyword detected: CHR .\n"); }
+CHR                                                             { return CHR; }
 
 const |
-CONST                                                           { printf("Keyword detected: CONST .\n"); }
+CONST                                                           { return CONST; }
 
 do |
-DO                                                              { printf("Keyword detected: DO .\n"); }
+DO                                                              { return DO; }
 
 downto |
-DOWNTO                                                          { printf("Keyword detected: DOWNTO .\n"); }
+DOWNTO                                                          { return DOWNTO; }
 
 else |
-ELSE                                                            { printf("Keyword detected: ELSE .\n"); }
+ELSE                                                            { return ELSE; }
 
 elseif |
-ELSEIF                                                          { printf("Keyword detected: ELSEIF .\n"); }
+ELSEIF                                                          { return ELSEIF; }
 
 end |
-END                                                             { printf("Keyword detected: END .\n"); }
+END                                                             { return END; }
 
 for |
-FOR                                                             { printf("Keyword detected: FOR .\n"); }
+FOR                                                             { return FOR; }
 
 forward |
-FORWARD                                                         { printf("Keyword detected: FORWARD .\n"); }
+FORWARD                                                         { return FORWARD; }
 
 function |
-FUNCTION                                                        { printf("Keyword detected: FUNCTION .\n"); }
+FUNCTION                                                        { return FUNCTION; }
 
 if |
-IF                                                              { printf("Keyword detected: IF .\n"); }
+IF                                                              { return IF; }
 
 of |
-OF                                                              { printf("Keyword detected: OF .\n"); }
+OF                                                              { return OF; }
 
 ord |
-ORD                                                             { printf("Keyword detected: ORD .\n"); }
+ORD                                                             { return ORD; }
 
 pred |
-PRED                                                            { printf("Keyword detected: PRED .\n"); }
+PRED                                                            { return PRED; }
 
 procedure |
-PROCEDURE                                                       { printf("Keyword detected: PROCEDURE .\n"); }
+PROCEDURE                                                       { return PROCEDURE; }
 
 read |
-READ                                                            { printf("Keyword detected: READ .\n"); }
+READ                                                            { return READ; }
 
 record |
-RECORD                                                          { printf("Keyword detected: RECORD .\n"); }
+RECORD                                                          { return RECORD; }
 
 repeat |
-REPEAT                                                          { printf("Keyword detected: REPEAT .\n"); }
+REPEAT                                                          { return REPEAT; }
 
 return |
-RETURN                                                          { printf("Keyword detected: RETURN .\n"); }
+RETURN                                                          { return RETURN; }
 
 stop |
-STOP                                                            { printf("Keyword detected: STOP .\n"); }
+STOP                                                            { return STOP; }
 
 succ |
-SUCC                                                            { printf("Keyword detected: SUCC .\n"); }
+SUCC                                                            { return SUCC; }
 
 then |
-THEN                                                            { printf("Keyword detected: THEN .\n"); }
+THEN                                                            { return THEN; }
 
 to |
-TO                                                              { printf("Keyword detected: TO .\n"); }
+TO                                                              { return TO; }
 
 type |
-TYPE                                                            { printf("Keyword detected: TYPE .\n"); }
+TYPE                                                            { return TYPE; }
 
 until |
-UNTIL                                                           { printf("Keyword detected: UNTIL .\n"); }
+UNTIL                                                           { return UNTIL; }
 
 var |
-VAR                                                             { printf("Keyword detected: VAR .\n"); }
+VAR                                                             { return VAR; }
 
 while |
-WHILE                                                           { printf("Keyword detected: WHILE .\n"); }
+WHILE                                                           { return WHILE; }
 
 write |
-WRITE                                                           { printf("Keyword detected: WRITE .\n"); }
+WRITE                                                           { return WRITE; }
 
-[a-zA-Z][0-9a-zA-Z_]*                                           { printf("Identifier detected: %s .\n", yytext); }
+[a-zA-Z][0-9a-zA-Z_]*                                           { return IDENTIFIER; }
 
-\+                                                              { printf("Operator or delimiter detected: + .\n"); }
+\+                                                              { return PLUS; }
 
-\-                                                              { printf("Operator or delimiter detected: - .\n"); }
+\-                                                              { return MINUS; }
 
-\*                                                              { printf("Operator or delimiter detected: * .\n"); }
+\*                                                              { return TIMES; }
 
-\/                                                              { printf("Operator or delimiter detected: / .\n"); }
+\/                                                              { return DIVIDE; }
 
-&                                                               { printf("Operator or delimiter detected: & .\n"); }
+&                                                               { return AND; }
 
-\|                                                               { printf("Operator or delimiter detected: | .\n"); }
+\|                                                              { return OR; }
 
-~                                                               { printf("Operator or delimiter detected: ~ .\n"); }
+~                                                               { return NOT; }
 
-=                                                               { printf("Operator or delimiter detected: = .\n"); }
+=                                                               { return EQUAL; }
 
-\<\>                                                            { printf("Operator or delimiter detected: <> .\n"); }
+\<\>                                                            { return DIAMOND; }
 
-\<                                                              { printf("Operator or delimiter detected: < .\n"); }
+\<                                                              { return LT; }
 
-\<=                                                             { printf("Operator or delimiter detected: <= .\n"); }
+\<=                                                             { return LEQ; }
 
-\>                                                              { printf("Operator or delimiter detected: > .\n"); }
+\>                                                              { return GT; }
 
-\>=                                                             { printf("Operator or delimiter detected: >= .\n"); }
+\>=                                                             { return GEQ; }
 
-\.                                                              { printf("Operator or delimiter detected: . .\n"); }
+\.                                                              { return DOT; }
 
-,                                                               { printf("Operator or delimiter detected: , .\n"); }
+,                                                               { return COMMA; }
 
-:                                                               { printf("Operator or delimiter detected: : .\n"); }
+:                                                               { return COLON; }
 
-;                                                               { printf("Operator or delimiter detected: ; .\n"); }
+;                                                               { return SEMI; }
 
-\(                                                              { printf("Operator or delimiter detected: ( .\n"); }
+\(                                                              { return OPAREN; }
 
-\)                                                              { printf("Operator or delimiter detected: ) .\n"); }
+\)                                                              { return CPAREN; }
 
-\[                                                              { printf("Operator or delimiter detected: [ .\n"); }
+\[                                                              { return OBRACKET; }
 
-\]                                                              { printf("Operator or delimiter detected: ] .\n"); }
+\]                                                              { return CBRACKET; }
 
-:=                                                              { printf("Operator or delimiter detected: := .\n"); }
+:=                                                              { return ASSIGN; }
 
-%                                                               { printf("Operator or delimiter detected: %% .\n"); }
+%                                                               { return MODULO; }
 
-0[0-7]+                                                         { printf("Integer constant, octal, detected: %s .\n", yytext); }
+0[0-7]+                                                         { return OCTINTCONST; }
 
-0x[0-9a-fA-F]+                                                  { printf("Integer constant, hexadecimal, detected: %s .\n", yytext); }
+0x[0-9a-fA-F]+                                                  { return HEXINTCONST; }
 
-[0-9]+                                                          { printf("Integer constant, decimal, detected: %s .\n", yytext); }
+[0-9]+                                                          { return DECINTCONST; }
 
-$[^\n]*                                                         { printf("Comment ignored: %s .\n", yytext); } 
+$[^\n]*                                                         { } 
 
 \n                                                              { ++linenum; }
 
-.                                                               { printf("Unknown lexeme detected on line %i: %s .\n", linenum, yytext); }
+.                                                               { printf("Unknown lexeme detected on line %i: %s .\n", linenum, yytext); yyerror(yytext); }
 %%
-
-								/*
-main ()
-{
-  yylex();
-}
-								*/

@@ -18,19 +18,6 @@ SHELL = /bin/sh
 
 all: bin/pcmcpsl_syntax_analysis_demo
 
-test: pcmcpsl_syntax_analysis_demo_test
-
-pcmcpsl_syntax_analysis_demo_test: all
-#	$(info Testing with test/lexical_test.cpsl:)
-#	$(info )
-#	bin/pcmcpsl_syntax_analysis_demo < test/lexical_test.cpsl
-#	$(info )
-#	$(info )
-#	$(info Testing with test/tictactoe.cpsl:)
-	bin/pcmcpsl_syntax_analysis_demo < test/tictactoe.cpsl
-#	$(info )
-#	$(info )
-
 bin/pcmcpsl_syntax_analysis_demo: src/pcmcpsl.yy.c src/pcmcpsl.tab.c src/pcmcpsl.tab.h
 	mkdir -p bin
 	gcc -lfl src/pcmcpsl.yy.c src/pcmcpsl.tab.c -o bin/pcmcpsl_syntax_analysis_demo
@@ -40,5 +27,23 @@ src/pcmcpsl.yy.c: src/pcmcpsl.lex src/pcmcpsl.tab.h
 
 src/pcmcpsl.tab.c src/pcmcpsl.tab.h: src/pcmcpsl.y
 	cd src; \
-	bison -d pcmcpsl.y; \
+	bison -t -d pcmcpsl.y; \
 	cd ..
+
+test: pcmcpsl_syntax_analysis_demo_test
+
+pcmcpsl_syntax_analysis_demo_test: all
+#	$(info Testing with test/lexical_test.cpsl:)
+#	$(info )
+#	bin/pcmcpsl_syntax_analysis_demo < test/lexical_test.cpsl
+#	$(info )
+#	$(info )
+#	$(info Testing with test/tictactoe.cpsl:)
+#	bin/pcmcpsl_syntax_analysis_demo < test/pcm_test_prog.cpsl
+	bin/pcmcpsl_syntax_analysis_demo < test/array_sum.cpsl
+#	bin/pcmcpsl_syntax_analysis_demo < test/hanoi.cpsl
+#	$(info )
+#	$(info )
+
+clean:
+	rm src/pcmcpsl.tab.c src/pcmcpsl.tab.h src/pcmcpsl.yy.c

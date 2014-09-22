@@ -19,14 +19,16 @@
     This is the yacc file for the syntax analysis phase of PCMCPSL.
   */
 
-  //#include<stdio.h>
+  #include<stdio.h>
 
   //Remove this later.
   //int here = 0;
 %}
 
+
+
 //			Keyword Token Group
-%token ARRAY BEGIN CHR CONST DO DOWNTO
+%token ARRAY BEGINX CHR CONST DO DOWNTO
 %token ELSE ELSEIF END FOR FORWARD FUNCTION
 %token IF OF ORD PRED PROCEDURE READ
 %token RECORD REPEAT RETURN STOP SUCC THEN
@@ -35,40 +37,47 @@
 //			Identifier Token
 %token IDENTIFIER
 
-//			Operator Tokens
+//			Operator Tokens (sans math)
 %token PLUS MINUS TIMES DIVIDE AND OR NOT EQUAL
 %token DIAMOND LT LEQ GT GEQ DOT COMMA COLON
 %token SEMI OPAREN CPAREN OBRACKET CBRACKET ASSIGN MODULO
 
+//			Math Operator Tokens
+
 //			Constant Tokens
 %token OCTINTCONST HEXINTCONST DECINTCONST CHARCONST STRCONST
+
+//			Specify Start Token
+//			%start program
+
+//			Fix Op Precedence Later
 
 %%
 // Program
 program:
-		const_decl_opt type_decl_opt var_decl_opt proc_or_func_decl_star block
+		const_decl_opt { printf("Program ConstDecl parsed.\n"); } type_decl_opt { printf("Program TypeDecl parsed.\n"); } var_decl_opt { printf("Program VarDecl parsed.\n"); } proc_or_func_decl_star { printf("Program ProcDecl and FuncDecl parsed.\n"); } block { printf("Program Block parsed.\n"); } DOT { printf("Program parsed.\n"); }
 		;
 
 const_decl_opt:
-		const_decl
-	|	
+		%empty { printf("Program or Body has no ConstDecl.\n"); }
+	|	const_decl
 		;
 
 type_decl_opt:
-		type_decl
-	|
+		%empty { printf("Program or Body has no TypeDecl.\n"); }
+	|	type_decl
 		;
 
 var_decl_opt:
-		var_decl
-	|
+		%empty { printf("Program or Body has no VarDecl.\n"); }
+	|	var_decl
 		;
 
 
 proc_or_func_decl_star:
-		proc_or_func_decl_star proc_decl
-	| 	proc_or_func_decl_star func_decl
-	| 
+		%empty
+	|	proc_or_func_decl_star proc_decl { printf("Program has ProcDecl.\n"); }
+	| 	proc_or_func_decl_star func_decl { printf("Program has FuncDecl.\n"); }
 		;
 
 // Declarations
@@ -77,52 +86,54 @@ proc_or_func_decl_star:
 
 // ConstantDecl
 const_decl:
-		CONST const_decl_assign_list_plus
+		CONST const_decl_assign_list_plus { printf("ConstDecl parsed.\n"); }
 		;
 
 const_decl_assign_list_plus:
-		const_decl_assign_list_plus IDENTIFIER EQUAL expression SEMI
-	|	IDENTIFIER EQUAL expression COMMA
+		IDENTIFIER EQUAL exp SEMI
+	|	const_decl_assign_list_plus IDENTIFIER EQUAL exp SEMI
 		;
 
 // Procedure and Function Declarations
 
 // ProcedureDecl, type name may be iffy.
-proc_decl:	
-		PROCEDURE IDENTIFIER OPAREN formal_parameters CPAREN SEMI FORWARD SEMI
-	|	PROCEDURE IDENTIFIER OPAREN formal_parameters CPAREN SEMI body SEMI
+proc_decl:
+		PROCEDURE IDENTIFIER OPAREN formal_parameters CPAREN SEMI { printf("Procedure FormalParameters parsed.\n"); } SEMI FORWARD SEMI { printf("ProcDecl parsed.\n"); }
+		// Place SEMI here for compliance.
+		// File Github bug report.
+	|	PROCEDURE IDENTIFIER OPAREN formal_parameters CPAREN SEMI { printf("Procedure FormalParameters parsed.\n"); } body SEMI { printf("ProcDecl parsed.\n"); }
 		;
 
 // FunctionDecl
-func_decl:	
-		FUNCTION IDENTIFIER OPAREN formal_parameters CPAREN COLON type SEMI FORWARD SEMI
-	|	FUNCTION IDENTIFIER OPAREN formal_parameters CPAREN COLON type SEMI body SEMI
+func_decl:
+		FUNCTION IDENTIFIER OPAREN formal_parameters CPAREN COLON typex SEMI FORWARD SEMI { printf("FuncDecl parsed.\n"); }
+	|	FUNCTION IDENTIFIER OPAREN formal_parameters CPAREN COLON typex SEMI body SEMI { printf("FuncDecl parsed.\n"); }
 		;
 
 // FormalParameters
 formal_parameters:
-		var_opt ident_list COLON type remaining_fp_list_star
-	|	
+		%empty
+	|	var_opt ident_list COLON typex { printf("FormalParameters parameter parsed.\n"); } remaining_fp_list_star { printf("FormalParameters parsed.\n"); };
 		;
 
 remaining_fp_list_star:
-		remaining_fp_list_star SEMI var_opt ident_list COLON type
-	|	
+		%empty		
+	|	remaining_fp_list_star SEMI var_opt ident_list COLON typex { printf("FormalParameters parameter parsed.\n"); }
 		;
 
 var_opt:	
-		VAR
-	|	
+		%empty
+	|	VAR
 		;
 
 // Body
 body:		
-		const_decl_opt type_decl_opt var_decl_opt block
+		const_decl_opt type_decl_opt var_decl_opt block { printf("Body parsed.\n"); }
 		;
 
 // Block
-block:		
-		BEGIN statement_sequence END
+block:
+		BEGINX statement_sequence END { printf("Block parsed.\n"); }
 		;
 
 // Type Declarations
@@ -133,12 +144,12 @@ type_decl:
 		;
 
 type_decl_list_plus:
-		type_decl_list_plus IDENTIFIER EQUAL type SEMI
-	|	IDENTIFIER EQUAL type SEMI
+		type_decl_list_plus IDENTIFIER EQUAL typex SEMI
+	|	IDENTIFIER EQUAL typex SEMI
 		;
 
 // Type (do not confuse with the terminal TYPE)
-type:		
+typex:		
 		simple_type
 	|	record_type
 	|	array_type
@@ -155,96 +166,83 @@ record_type:
 		;
 
 record_ident_type_list_star:
-		record_ident_type_list_star ident_list COLON type SEMI
-	|	
+		%empty
+	|	record_ident_type_list_star ident_list COLON typex SEMI
 		;
 
 // ArrayType
 array_type:	
-		ARRAY OBRACKET expression COLON expression CBRACKET OF type
+		ARRAY OBRACKET exp COLON exp CBRACKET OF typex
 		;
 
-// IdentList
-ident_list:	
-		IDENTIFIER ident_list_remainder_star
+// IdentList, could combine with rule below.
+ident_list:
+		IDENTIFIER ident_list_remainder_star { printf("IdentList identifier parsed.\nIdentList parsed.\n"); }
 		;
 
-ident_list_remainder_star:
-		ident_list_remainder_star COMMA IDENTIFIER
+ident_list_remainder_star: 
+		%empty
+	|	ident_list_remainder_star COMMA IDENTIFIER { printf("IdentList identifier parsed.\n"); }
 		;
 
 // Variable Declarations
 
 // VarDecl
-var_decl:	
-		VAR var_decl_list_plus
+var_decl:
+		VAR var_decl_list_plus { printf("VarDecl parsed.\n"); }
 		;
 
 var_decl_list_plus:
-		var_decl_list_plus ident_list COLON type SEMI
-	|	ident_list COLON type SEMI
+		ident_list COLON typex SEMI { printf("VarDecl group parsed.\n" ); }
+	|	var_decl_list_plus ident_list COLON typex SEMI { printf("VarDecl group parsed.\n" ); }
 		;
 
 // CPSL Statements
 
 // StatementSequence
 statement_sequence:
-		statement statement_sequence_remainder_star
+		statement_sequence_star	statement SEMI { printf("StatementSequence statement parsed.\nStatementSequence parsed.\n"); }
 		;
 
-statement_sequence_remainder_star:
-		statement_sequence_remainder_star SEMI statement
-	|	
+statement_sequence_star:
+		%empty
+	|	statement_sequence_star statement SEMI { printf("StatementSequence statement parsed.\n"); }
 		;
 
-// Statement
+// Statement, add internal comments.
 statement:	
-		assignment
-	|	if_statement
-	|	while_statement
-	|	repeat_statement
-	|	for_statement
-	|	stop_statement
-	|	return_statement
-	|	read_statement
-	|	write_statement
-	|	procedure_call
-	|	null_statement
-		;
-
-// Assignment
-assignment:	
-		l_value ASSIGN expression
-		;
-
-// IfStatement
-if_statement:	
-		IF expression THEN statement_sequence elseif_list_star else_statement_opt END
+		// Assignment
+		l_value ASSIGN exp { printf("Assignment parsed.\n"); }
+		// IfStatement
+	|	IF exp { printf("IfStatement conditional Expression parsed.\n"); } THEN statement_sequence { printf("IfStatement Statements parsed.\n"); } elseif_list_star { printf("IfStatement ElseIfStatement parsed.\n"); } else_statement_opt { printf("IfStatement ElseStatment parsed.\n"); } END { printf("IfStatement parsed.\n"); }
+		// WhileStatement
+	|	WHILE exp DO statement_sequence END { printf("WhileStatement parsed.\n"); }
+		// RepeatStatement
+	|	REPEAT statement_sequence UNTIL exp { printf("RepeatStatement parsed.\n"); }
+		// ForStatement
+	|	FOR IDENTIFIER ASSIGN exp to_or_downto exp DO statement_sequence END { printf("ForStatement parsed.\n"); }
+		// StopStatement
+	|	STOP { printf("StopStatement parsed.\n"); }
+		// ReturnStatement
+	|	RETURN exp_opt { printf("ReturnStatement parsed.\n"); }
+		// ReadStatement
+	|	READ OPAREN l_value rs_l_value_star CPAREN { printf("ReadStatement parsed.\n"); }
+		// WriteStatement
+	|	WRITE OPAREN exp wr_exp_star CPAREN { printf("WriteStatement parsed.\n"); }
+		// ProcedureCall
+	| 	IDENTIFIER OPAREN pc_exp_list_opt CPAREN { printf("ProcedureCall parsed.\n"); }
+		// NullStatement
+	|	%empty { printf("NullStatement parsed.\n"); }
 		;
 
 elseif_list_star:
-		elseif_list_star ELSEIF expression THEN statement_sequence
-	|	
+		%empty
+	|	elseif_list_star ELSEIF exp THEN statement_sequence { printf("ElseIfStatement Statement parsed.\n"); }
 		;
 
 else_statement_opt:
-		ELSE statement_sequence
-	|	
-		;
-
-// WhileStatement
-while_statement:
-		WHILE expression DO statement_sequence END
-		;
-
-// RepeatStatement
-repeat_statement:
-		REPEAT statement_sequence UNTIL expression
-		;
-
-// ForStatement
-for_statement:	
-		FOR IDENTIFIER ASSIGN expression to_or_downto expression DO statement_sequence END
+		%empty
+	|	ELSE statement_sequence { printf("ElseStatement Statement parsed.\n"); }
 		;
 
 to_or_downto:
@@ -252,127 +250,104 @@ to_or_downto:
 	|	DOWNTO
 		;
 
-// StopeStatement
-stop_statement:	
-		STOP
+exp_opt:	
+		%empty
+	|	exp
 		;
 
-// ReturnStatement
-return_statement:
-		RETURN expression_opt
+rs_l_value_star:
+		%empty
+	|	rs_l_value_star COMMA l_value
 		;
 
-expression_opt:	
-		expression
-	|	
+wr_exp_star:
+		%empty
+	|	wr_exp_star COMMA exp
 		;
 
-// ReadStatement
-read_statement:	
-		READ OPAREN l_value read_statement_l_value_remainder_star CPAREN
+pc_exp_list_opt:
+		%empty
+	|	exp pc_exp_star
 		;
 
-read_statement_l_value_remainder_star:
-		read_statement_l_value_remainder_star COMMA l_value
-	|	
-		;
-
-// WriteStatement, move all other statement to new list notation.
-write_statement:
-		WRITE OPAREN expression wr_expression_star CPAREN
-		;
-
-wr_expression_star:
-		wr_expression_star COMMA expression
-	|	
-		;
-
-// ProcedureCall
-procedure_call:	
-		IDENTIFIER OPAREN pc_expression_list_opt CPAREN
-		;
-
-pc_expression_list_opt:
-		expression pc_expression_star
-	|	
-		;
-
-pc_expression_star:
-		pc_expression_star COMMA expression
-	|	
-		;
-
-// NullStatement
-null_statement:	
-		
+pc_exp_star:
+		%empty
+	|	pc_exp_star COMMA exp
 		;
 
 // Expressions, fix the exp hack later.
-
-expression:	
-		e
-		;
-
+exp:		
+		e { printf("Expression parsed.\n"); }
+	;
 e:		
-		e OR e
-	|	e AND e
-	|	e EQUAL e
-	|	e DIAMOND e
-	|	e LEQ e
-	|	e GEQ e
-	|	e LT e
-	|	e GT e
-	|	e PLUS e
-	|	e MINUS e
-	|	e TIMES e
-	|	e DIVIDE e
-	|	e MODULO e
-	|	NOT e
-	|	MINUS e
-	|	OPAREN e CPAREN
-	|	IDENTIFIER OPAREN // Fix this later CPAREN
-	|	CHR e
-	|	ORD e
-	|	PRED e
-	|	SUCC e
+		exp OR exp
+	|	exp AND exp
+	|	exp EQUAL exp
+	|	exp DIAMOND exp
+	|	exp LEQ exp
+	|	exp GEQ exp
+	|	exp LT exp
+	|	exp GT exp
+	|	exp PLUS exp
+	|	exp MINUS exp
+	|	exp TIMES exp
+	|	exp DIVIDE exp
+	|	exp MODULO exp
+	|	NOT exp
+	|	MINUS exp
+	|	OPAREN exp CPAREN
+	|	IDENTIFIER OPAREN exp_star_opt CPAREN
+	|	CHR exp
+	|	ORD exp
+	|	PRED exp
+	|	SUCC exp
 	|	l_value
-		;
-
-expression_star_opt:
-		e expression_star
-	|	
-		;
-
-expression_star:
-		expression_star COMMA e
-	|	
+		// The following are tentative.
+	|	OCTINTCONST
+	|	HEXINTCONST
+	|	DECINTCONST
+	|	CHARCONST
+	|	STRCONST
 		;
 
 // LValue
 l_value:	
-		IDENTIFIER l_value_dot_star
+		IDENTIFIER l_value_dot_star { printf("LValue parsed.\n"); }
 	;
 
+exp_star_opt:
+		%empty
+	|	exp exp_star
+		;
+
+exp_star:
+		%empty
+	|	exp_star COMMA exp
+		;
+
 l_value_dot_star:
-		l_value_dot_star dot_identifier_or_index
+		%empty
+	|	l_value_dot_star dot_identifier_or_index
 		;
 
 dot_identifier_or_index:
-		dot_identifier_or_index DOT IDENTIFIER
-	|	dot_identifier_or_index OBRACKET e CBRACKET
-	|	
+		DOT IDENTIFIER
+	|	OBRACKET exp CBRACKET
 		;
+
+// I need to remember to add the op precedence.
+
 %%
 
 //extern FILE* yyin;
 
 main()
 {
-  yyparse();
+    yyparse();
 }
 
 yyerror(prbstr)
 {
     // Put in a Haiku error later.
-    printf("Error detected.\n\n\tIf at first you don't succeed, give up and let a human handle it. -- PCMCPSL\n\n");
+    printf("Error detected: %s .\n\n\tIf at first you don't succeed, give up and let a human handle it. -- PCMCPSL\n\n", prbstr);
 }
