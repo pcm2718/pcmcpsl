@@ -1,4 +1,2 @@
-The syntax analysis demo executable is located at
-bin/pcmcpsl_syntax_analysis_demo. Remember to run 'make' or 'make all'
-first to build the project. 'make test' runs an assortment of test
-files throught the syntax analyzer.
+pcmcpsl is located at bin/pcmcpsl . Remember to run 'cmake .' to build
+the Makefile, followed by 'make' or 'make all' to build the project.
