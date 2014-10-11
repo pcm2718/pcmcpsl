@@ -20,9 +20,14 @@
   compilation.
 */
 
-#include <cstdio>
+//#include <cstdio>
 #include <argp.h>
+#include <string>
+#include <fstream>
+#include <sstream>
 //#include "compiler.hpp"
+
+
 
 /*
   Everything from here to main is part of the argument parsing system.
@@ -102,7 +107,11 @@ static struct argp argp = {options, parse_opt, args_doc, doc};
 
 
 /*
-  Main is exactly what it says on the tin.
+  main is exactly what you would expect; it sets some defaults for the
+  flags calls arp_parse to grab the user's flags, input file and
+  output file. After making sure the input and output files are valid,
+  it passes the flags and files on to Compiler so it can do the *real*
+  compilation.
 */
 int main(int argc, char** argv)
 {
@@ -116,35 +125,96 @@ int main(int argc, char** argv)
   args.xopt_p = false;
   args.annotate_p = false;
 
+
+
   /*
-    Run the arguments parser.
+    Run the argument parser.
   */
   argp_parse(&argp, argc, argv, 0, 0, &args);
 
-  /*
-    Determine the file availability of the infile and outfile. Should
-    the program do incremental read and write or read and write all at
-    once?
-  */
+
 
   /*
-    Print the parsed arguments.
+    Print the parsed arguments. Commented code retained for debugging purposes.
   */
+  /*
   printf("INFILE.cpsl: %s\nOUTFILE.cpsl: %s\n"
 	 "popt_p: %s\nsopt_p: %s\nxopt_p: %s\n"
 	 "annotate_p: %s\n",
 	 args.args[0], args.args[1],
 	 args.popt_p ? "true" : "false", args.sopt_p ? "true" : "false", args.xopt_p ? "true" : "false",
 	 args.annotate_p ? "true" : "false");
+  */
 
 
-    /*
-  auto & compiler = Compiler();
 
-  compiler.gen_ast(infile, popt_p);
-  compiler.gen_int(opt_p, xopt_p);
-  compiler.gen_out(outfile, annotate_p);
-    */
+  /*
+    Test the readability of INFILE.cpsl, then read INFILE.cpsl into
+    std::string & incode . std::string conversion courtesy of:
+    https://stackoverflow.com/questions/116038/what-is-the-best-way-to-slurp-a-file-into-a-stdstring-in-c .
+  */
+  // Add some error handling here.
+  std::string incode;
+  std::ifstream infile (args.args[0], std::ios::in | std::ios::binary);
+  if (infile)
+  {
+    infile.seekg(0, std::ios::end);
+    incode.resize(infile.tellg());
+    infile.seekg(0, std::ios::beg);
+    infile.read(&incode[0], incode.size());
 
+  }
+  infile.close();
+  //throw(errno);
+
+
+
+  /*
+    Make sure we can create and write to OUTFILE.mips . Also, declare
+    and initialize std::string & outcode .
+  */
+  // Implement this later, add error handling.
+  std::string outcode = std::string();
+
+
+
+  /*
+    Compiler, on screen!
+
+    Get an instance of Compiler, passing the incode and outcode
+    strings to the constuctor, along with the flag settings struct.
+  */
+  // I should probably alter args to be passed by reference.
+  // Compiler may also be a singleton in the future.
+  // Compiler compiler (incode, outcode, args);
+
+  /*
+    Engage!
+
+    Finally, just do the compiling already!
+  */
+  // Add error, handling.
+  // compiler.gen_ast();
+  // compiler.gen_int();
+  // compiler.gen_out();
+
+
+
+  /*
+    Actual compiling is now done, all we need to do now is write
+    outcode to OUTPUT.mips.
+  */
+  std::ofstream outfile (args.args[1], std::ios::out | std::ios::binary);
+  // There may be a better way to do this with blocks or somthing.
+  outfile << outcode;
+  outfile.close();
+
+
+
+  /*
+    We made it this far, return 0.
+
+    Also, RTS style Millitary equipment.
+  */
   return 0;
 };
