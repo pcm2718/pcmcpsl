@@ -23,6 +23,11 @@
     [^\n\t ]*                       { printf("Unknown lexeme detected on line %i: %s .\n", linenum, yytext); }
   */
 
+extern "C"
+{
+        int yylex(void);
+}
+
   /*
     Include the yacc generated header.
   */

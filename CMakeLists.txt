@@ -30,42 +30,42 @@ endfunction()
 # This flag choice here is from
 # https://github.com/Jesse-V/Folding-Atomata/blob/master/src/CMakeLists.txt .
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    set(CMAKE_CXX_FLAGS "-g -O3 --std=c++11 -Wno-c++98-compat-pedantic -pedantic -Weverything -Wno-unused-parameter -Wno-global-constructors -Wno-exit-time-destructors -Wno-non-virtual-dtor -Wno-weak-vtables -Wno-padded -Wno-cast-align -Wno-gnu -Wno-nested-anon-types -Wno-documentation-unknown-command -Wno-unknown-pragmas")
+    set(CMAKE_CXX_FLAGS "-lfl -g -O3 --std=c++11 -Wno-c++98-compat-pedantic -pedantic -Weverything -Wno-unused-parameter -Wno-global-constructors -Wno-exit-time-destructors -Wno-non-virtual-dtor -Wno-weak-vtables -Wno-padded -Wno-cast-align -Wno-gnu -Wno-nested-anon-types -Wno-documentation-unknown-command -Wno-unknown-pragmas")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    set(CMAKE_CXX_FLAGS "-g -O3 --std=c++11 -Wall -Wextra -Wdouble-promotion -Wfloat-equal -Wunsafe-loop-optimizations -Wno-unused-parameter")
+    set(CMAKE_CXX_FLAGS "-lfl -g -O3 --std=c++11 -Wall -Wextra -Wdouble-promotion -Wfloat-equal -Wunsafe-loop-optimizations -Wno-unused-parameter")
 endif()
 
 
 
 FIND_PACKAGE(BISON REQUIRED)
-SET(BisonOutput src/lexyacc/pcmcpsl.tab.c)
+SET(BisonOutput src/lexyacc/pcmcpsl.tab.hpp src/lexyacc/pcmcpsl.tab.cpp)
 SET(BISON_EXECUTABLE bison)
 IF(BISON_FOUND)
     ADD_CUSTOM_COMMAND(
       OUTPUT ${BisonOutput}
       COMMAND ${BISON_EXECUTABLE}
-              --defines=src/lexyacc/pcmcpsl.tab.h
-              --output=${BisonOutput}
+              --defines=src/lexyacc/pcmcpsl.tab.hpp
+              --output=src/lexyacc/pcmcpsl.tab.cpp
               src/lexyacc/pcmcpsl.y
-      COMMENT "Generating pcmcpsl.tab.c"
-      COMMENT "Generating pcmcpsl.tab.y"
+      COMMENT "Generating pcmcpsl.tab.hpp"
+      COMMENT "Generating pcmcpsl.tab.cpp"
     )
 ENDIF()
 
 FIND_PACKAGE(FLEX REQUIRED)
-SET(FlexOutput src/lexyacc/pcmcpsl.yy.c)
-SET(FLEX_EXECUTABLE bison)
+SET(FlexOutput src/lexyacc/pcmcpsl.yy.cpp)
+SET(FLEX_EXECUTABLE flex)
 IF(FLEX_FOUND)
     ADD_CUSTOM_COMMAND(
       OUTPUT ${FlexOutput}
       COMMAND ${FLEX_EXECUTABLE}
               --outfile=${FlexOutput}
               src/lexyacc/pcmcpsl.l
-      COMMENT "Generating pcmcpsl.yy.c"
+      COMMENT "Generating pcmcpsl.yy.cpp"
     )
 ENDIF()
 
-ADD_LIBRARY(MyLib ${BisonOutput} ${FlexOutput})
+# ADD_LIBRARY(MyLib ${BisonOutput} ${FlexOutput})
 
 
 
@@ -76,9 +76,9 @@ add_executable( pcmcpsl
 		src/compiler.hpp
 		src/compiler.cpp
 
-		src/lexyacc/pcmcpsl.tab.c
-		src/lexyacc/pcmcpsl.tab.h
-		src/lexyacc/pcmcpsl.y)
+
+		${BisonOutput}
+		${FlexOutput})
 
 
 
