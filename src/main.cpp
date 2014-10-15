@@ -25,7 +25,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
-//#include "compiler.hpp"
+#include "compiler.hpp"
 
 
 
@@ -39,10 +39,10 @@ static char args_doc[] = "INFILE.cpsl OUTFILE.mips";
 
 static struct argp_option options[] = 
   {
-    {"parseropt",   'p', 0, 0, "Enable parse-time optimizations."},
-    {"semanticopt", 's', 0, 0, "Enable normal (compile time) optimizations."},
-    {"expopt",      'x', 0, 0, "Enable experimental optimizations."},
-    {"annotate",    'a', 0, 0, "Enable annotated assembly code."},
+    {"parseropt",   'p', 0, 0, "Enable parse-time optimizations. Not implmented."},
+    {"semanticopt", 's', 0, 0, "Enable normal (compile time) optimizations. Not implmented."},
+    {"expopt",      'x', 0, 0, "Enable experimental optimizations. Not implmented."},
+    {"annotate",    'a', 0, 0, "Enable annotated assembly code. Not implmented."},
     {0}
   };
 
@@ -186,7 +186,7 @@ int main(int argc, char** argv)
   */
   // I should probably alter args to be passed by reference.
   // Compiler may also be a singleton in the future.
-  // Compiler compiler (incode, outcode, args);
+  Compiler compiler (incode, args.popt_p, args.sopt_p, args.xopt_p, args.annotate_p);
 
   /*
     Engage!
@@ -194,6 +194,8 @@ int main(int argc, char** argv)
     Finally, just do the compiling already!
   */
   // Add error, handling.
+  if (compiler.compile())
+    return 1;
   // compiler.gen_ast();
   // compiler.gen_int();
   // compiler.gen_out();

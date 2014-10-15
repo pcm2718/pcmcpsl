@@ -25,39 +25,60 @@ function(sdk_list_source_files HEADER_FILES)
 	set(SOURCE_FILES ${SOURCE_FILES_TMP} PARENT_SCOPE)
 endfunction()
 
-# Function to setup some standard project items
-# PROJECTNAME - The name of the project being setup
-# TARGETDIR - The target directory for output files (relative to CMAKE_SOURCE_DIR)
-# function(sdk_setup_project_common PROJECTNAME TARGETDIR)
-# 	# Set the Debug and Release names
-# 	set_target_properties(
-# 		${PROJECTNAME} 
-# 		PROPERTIES 
-# 		DEBUG_OUTPUT_NAME ${PROJECTNAME}_d 
-# 		RELEASE_OUTPUT_NAME ${PROJECTNAME}
-# 		)
 
-# 	# Setup install to copy the built output to the target directory 
-# 	# (for compilers that don't have post build steps)
-# 	install(
-# 		TARGETS ${PROJECTNAME}
-# 		LIBRARY DESTINATION "${CMAKE_SOURCE_DIR}/${TARGETDIR}"
-# 		ARCHIVE DESTINATION "${CMAKE_SOURCE_DIR}/${TARGETDIR}"
-# 		RUNTIME DESTINATION "${CMAKE_SOURCE_DIR}/${TARGETDIR}"
-# 		)
-# endfunction()
 
-# Function to setup some project items for an executable or DLL
-# PROJECTNAME - The name of the project being setup
-# function(sdk_setup_project_bin PROJECTNAME)
-# 	sdk_setup_project_common(${PROJECTNAME} bin)
-# endfunction()
+# This flag choice here is from
+# https://github.com/Jesse-V/Folding-Atomata/blob/master/src/CMakeLists.txt .
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    set(CMAKE_CXX_FLAGS "-g -O3 --std=c++11 -Wno-c++98-compat-pedantic -pedantic -Weverything -Wno-unused-parameter -Wno-global-constructors -Wno-exit-time-destructors -Wno-non-virtual-dtor -Wno-weak-vtables -Wno-padded -Wno-cast-align -Wno-gnu -Wno-nested-anon-types -Wno-documentation-unknown-command -Wno-unknown-pragmas")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    set(CMAKE_CXX_FLAGS "-g -O3 --std=c++11 -Wall -Wextra -Wdouble-promotion -Wfloat-equal -Wunsafe-loop-optimizations -Wno-unused-parameter")
+endif()
+
+
+
+FIND_PACKAGE(BISON REQUIRED)
+SET(BisonOutput src/lexyacc/pcmcpsl.tab.c)
+SET(BISON_EXECUTABLE bison)
+IF(BISON_FOUND)
+    ADD_CUSTOM_COMMAND(
+      OUTPUT ${BisonOutput}
+      COMMAND ${BISON_EXECUTABLE}
+              --defines=src/lexyacc/pcmcpsl.tab.h
+              --output=${BisonOutput}
+              src/lexyacc/pcmcpsl.y
+      COMMENT "Generating pcmcpsl.tab.c"
+      COMMENT "Generating pcmcpsl.tab.y"
+    )
+ENDIF()
+
+FIND_PACKAGE(FLEX REQUIRED)
+SET(FlexOutput src/lexyacc/pcmcpsl.yy.c)
+SET(FLEX_EXECUTABLE bison)
+IF(FLEX_FOUND)
+    ADD_CUSTOM_COMMAND(
+      OUTPUT ${FlexOutput}
+      COMMAND ${FLEX_EXECUTABLE}
+              --outfile=${FlexOutput}
+              src/lexyacc/pcmcpsl.l
+      COMMENT "Generating pcmcpsl.yy.c"
+    )
+ENDIF()
+
+ADD_LIBRARY(MyLib ${BisonOutput} ${FlexOutput})
+
 
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)
-add_executable(pcmcpsl
+add_executable( pcmcpsl
 
-	src/main.cpp)
+		src/main.cpp
+		src/compiler.hpp
+		src/compiler.cpp
+
+		src/lexyacc/pcmcpsl.tab.c
+		src/lexyacc/pcmcpsl.tab.h
+		src/lexyacc/pcmcpsl.y)
 
 
 
