@@ -282,12 +282,12 @@ void read(MemoryLocation * loc)
 
 
 
-void emitLabel(char * a){cpslout << a << ":" << std::endl;}
-void emitJump(char * a){cpslout << "j " << a << std::endl;}
+void emitLabel(char * a){cpslout << "\t" << a << ":" << std::endl;}
+void emitJump(char * a){cpslout << "\t" << "j " << a << std::endl;}
 void emitLabel(std::string a){cpslout << a << ":" << std::endl;}
-void emitJump(std::string a){cpslout << "j " << a << std::endl;}
-void emitBtrue(Expr * a, std::string label){cpslout << "bne $zero," << a->reg << "," << label << std::endl;}
-void emitBfalse(Expr * a, std::string label){cpslout << "beq $zero," << a->reg << "," << label << std::endl;}
+void emitJump(std::string a){cpslout << "\t" << "j " << a << std::endl;}
+void emitBtrue(Expr * a, std::string label){cpslout << "\t" << "bne $zero," << a->reg << "," << label << std::endl;}
+void emitBfalse(Expr * a, std::string label){cpslout << "\t" << "beq $zero," << a->reg << "," << label << std::endl;}
 
 
 
@@ -368,9 +368,10 @@ void ForLoop::emit_top_label()
 
 void ForLoop::emit_control(Expr* a)
 {
-  emitBfalse(dir ?
-	      emitGte(load(SymbolTable::getInstance()->lookupVariable(id).get()), a) :
-	      emitLte(load(SymbolTable::getInstance()->lookupVariable(id).get()), a),
+  emitBtrue(dir ?
+
+              binaryOp("slt", load(SymbolTable::getInstance()->lookupVariable(id).get()), a) :
+              binaryOp("slt", a, load(SymbolTable::getInstance()->lookupVariable(id).get())),
 	    "for_" + std::to_string(fornum) + "_bottom");
 };
 
@@ -378,7 +379,8 @@ void ForLoop::emit_control(Expr* a)
 void ForLoop::emit_rement()
 {
   Expr * a = load(SymbolTable::getInstance()->lookupVariable(id).get());
-  cpslout << "addi " << a->reg << "," << a->reg << "," << (dir ? "1" : "-1") << std::endl;
+  cpslout << "\t" << "addi " << a->reg << "," << a->reg << "," << (dir ? "-1" : "1") << std::endl;
+  store(SymbolTable::getInstance()->lookupVariable(id).get(), a);
 };
 
 
