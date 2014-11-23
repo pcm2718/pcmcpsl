@@ -2,6 +2,7 @@
 #define EXPRESSIONS_HPP
 
 #include <memory>
+#include <stack>
 
 class Register;
 class Type;
@@ -46,6 +47,13 @@ void store(MemoryLocation * loc, Expr * val);
 void write(Expr * a);
 void read(MemoryLocation * loc);
 
+void emitIfControl(Expr * a);
+void emitElseIfLabel();
+void emitElseIfControl(Expr * a);
+void emitElseLabel();
+void emitFiJump();
+void emitFiLabel();
+
 void emitRepeatLabel();
 void emitRepeatControl(Expr * a);
 
@@ -54,9 +62,34 @@ void emitWhileControl(Expr * a);
 void emitWhileJump();
 void emitWhileBottomLabel();
 
-void emitIfControl(Expr * a);
-void emitElseIfControl(Expr * a);
-void emitElseLabel();
-void emitFiJump();
-void emitFiLabel();
+class ForLoop
+{
+public:
+
+  static std::shared_ptr<ForLoop> get_instance();
+
+  static void init();
+  static void deinit();
+
+  void emit_init(Expr* a);
+  void emit_top_label();
+  void emit_control(Expr* a);
+  void emit_rement();
+  void emit_jump();
+  void emit_bottom_label();
+  //void emit_deinit();
+
+
+  static int forcounter;
+  static std::stack<std::shared_ptr<ForLoop>> forcurrent;
+
+  int fornum;
+  std::string id;
+  int dir;
+
+
+private:
+
+  ForLoop();
+};
 #endif

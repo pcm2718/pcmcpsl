@@ -4,7 +4,7 @@
 #include "StringTable.hpp"
 #include "SymbolTable.hpp"
 #include <fstream>
-#include <stack>
+
 
 extern std::ostream cpslout;
 
@@ -281,6 +281,7 @@ void read(MemoryLocation * loc)
 }
 
 
+
 void emitLabel(char * a){cpslout << a << ":" << std::endl;}
 void emitJump(char * a){cpslout << "j " << a << std::endl;}
 void emitLabel(std::string a){cpslout << a << ":" << std::endl;}
@@ -289,11 +290,45 @@ void emitBtrue(Expr * a, std::string label){cpslout << "bne $zero," << a->reg <<
 void emitBfalse(Expr * a, std::string label){cpslout << "beq $zero," << a->reg << "," << label << std::endl;}
 
 
+
+int ifcounter = 0;
+std::stack<std::pair<int, int>> ifcurrent;
+
+void emitIfControl(Expr * a)
+{
+  emitBfalse(a, "elseif" + std::to_string(++ifcounter) + "_1");
+  ifcurrent.push(std::pair<int, int>(ifcounter, 1));
+};
+void emitElseIfLabel()
+{
+  emitLabel("elseif" + std::to_string(ifcurrent.top().first) + "_" + std::to_string(ifcurrent.top().second));
+};
+void emitElseIfControl(Expr * a)
+{
+  emitBfalse(a, "elseif" + std::to_string(ifcurrent.top().first) + "_" + std::to_string(++ifcurrent.top().second));
+};
+void emitElseLabel()
+{
+  emitLabel("elseif" + std::to_string(ifcurrent.top().first) + "_" + std::to_string(ifcurrent.top().second++));
+};
+void emitFiJump()
+{
+  // Could be removed if we detect an if fallthrough.
+  emitJump("fi" + std::to_string(ifcurrent.top().first));
+};
+void emitFiLabel()
+{
+  emitElseLabel();
+  emitLabel("fi" + std::to_string(ifcurrent.top().first));
+  ifcurrent.pop();
+};
+
+
 int repeatcounter = 0;
 std::stack<int> repeatcurrent;
 
 void emitRepeatLabel(){emitLabel("repeat" + std::to_string(++repeatcounter)); repeatcurrent.push(repeatcounter);}
-void emitRepeatControl(Expr * a){emitBtrue(a, "repeat" + std::to_string(repeatcurrent.top())); repeatcurrent.pop();}
+void emitRepeatControl(Expr * a){emitBfalse(a, "repeat" + std::to_string(repeatcurrent.top())); repeatcurrent.pop();}
 
 
 int whilecounter = 0;
@@ -304,33 +339,69 @@ void emitWhileControl(Expr * a){emitBfalse(a, "whilebottom" + std::to_string(whi
 void emitWhileJump(){emitJump("whiletop" + std::to_string(whilecurrent.top()));};
 void emitWhileBottomLabel(){emitLabel("whilebottom" + std::to_string(whilecurrent.top())); whilecurrent.pop();};
 
+// forstartshere
+std::shared_ptr<ForLoop> ForLoop::get_instance()
+{
+  return forcurrent.top();
+};
 
-int ifcounter = 0;
-std::stack<std::pair<int, int>> ifcurrent;
 
-void emitIfControl(Expr * a)
+void ForLoop::init()
+{ forcurrent.push(std::shared_ptr<ForLoop>(new ForLoop())); };
+
+
+void ForLoop::deinit()
+{ forcurrent.pop(); };
+
+
+void ForLoop::emit_init(Expr* a)
 {
-  emitBfalse(a, "elseif" + std::to_string(++ifcounter) + "_1");
-  ifcurrent.push(std::pair<int, int>(ifcounter, 0));
+  store(SymbolTable::getInstance()->lookupVariable(id).get(), a);
 };
-void emitElseIfControl(Expr * a)
+
+
+void ForLoop::emit_top_label()
 {
-  emitLabel("elseif" + std::to_string(ifcurrent.top().first) + "_" + std::to_string(ifcurrent.top().second));
-  emitBfalse(a, "elseif" + std::to_string(ifcurrent.top().first) + "_" + std::to_string(++ifcurrent.top().second));
+  emitLabel("for_" + std::to_string(fornum) + "_top");
 };
-void emitElseLabel()
+
+
+void ForLoop::emit_control(Expr* a)
 {
-  emitLabel("elseif" + std::to_string(ifcurrent.top().first) + "_" + std::to_string(ifcurrent.top().second));
+  emitBfalse(dir ?
+	      emitGte(load(SymbolTable::getInstance()->lookupVariable(id).get()), a) :
+	      emitLte(load(SymbolTable::getInstance()->lookupVariable(id).get()), a),
+	    "for_" + std::to_string(fornum) + "_bottom");
 };
-void emitFiJump()
+
+
+void ForLoop::emit_rement()
 {
-  // Could be removed if we detect an if fallthrough.
-  emitJump("fi" + std::to_string(ifcurrent.top().first));
+  Expr * a = load(SymbolTable::getInstance()->lookupVariable(id).get());
+  cpslout << "addi " << a->reg << "," << a->reg << "," << (dir ? "1" : "-1") << std::endl;
 };
-void emitFiLabel()
+
+
+void ForLoop::emit_jump()
 {
-  ++ifcurrent.top().second;
-  emitElseLabel();
-  emitLabel("fi" + std::to_string(ifcurrent.top().first));
-  ifcurrent.pop();
+  emitJump("for_" + std::to_string(fornum) + "_top");
 };
+
+
+void ForLoop::emit_bottom_label()
+{
+  emitLabel("for_" + std::to_string(fornum) + "_bottom");
+};
+
+
+//void ForLoop::emit_deinit();
+  //This definition intentionally left blank.
+
+
+int ForLoop::forcounter = 0;
+std::stack<std::shared_ptr<ForLoop>> ForLoop::forcurrent = std::stack<std::shared_ptr<ForLoop>>();
+
+
+ForLoop::ForLoop()
+  : fornum(forcounter++), id(""), dir(-1)
+{};

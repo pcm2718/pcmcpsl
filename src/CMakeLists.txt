@@ -8,7 +8,7 @@ BISON_TARGET(CpslParser parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
 FLEX_TARGET(CpslScanner scanner.l ${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp)
 ADD_FLEX_BISON_DEPENDENCY(CpslScanner CpslParser)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -g")
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 

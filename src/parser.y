@@ -1,4 +1,5 @@
 %{
+#include <string.h>
 #include <iostream>
 #include <fstream>
 #include "ProcessLog.hpp"
@@ -46,6 +47,8 @@ void yyerror(const char*);
 %type <expr> Expression
 %type <location> LValue
 %type <idlist> IdentList
+
+%type	<int_val>	ToHead
 
 %%
 Program : ProgramHead Block DOTSY
@@ -185,7 +188,7 @@ ElseIfList : ElseIfList {emitFiJump();} ElseIfHead ThenPart
            |
            ;
 
-ElseIfHead : ELSEIFSY Expression {emitElseIfControl($2); delete($2);}
+ElseIfHead : ELSEIFSY {emitElseIfLabel();} Expression {emitElseIfControl($3); delete($3);}
            ;
 
 ElseClause : ELSESY {emitFiJump(); emitElseLabel();} StatementList
@@ -200,14 +203,14 @@ WhileHead : WHILESY {emitWhileTopLabel();} Expression {emitWhileControl($3); del
 
 RepeatStatement : REPEATSY {emitRepeatLabel();} StatementList UNTILSY Expression {emitRepeatControl($5); delete($5);}
 
-ForStatement : ForHead ToHead DOSY StatementList ENDSY
+ForStatement : {ForLoop::init();} ForHead DOSY StatementList ENDSY {ForLoop::get_instance()->emit_rement(); ForLoop::get_instance()->emit_jump(); ForLoop::get_instance()->emit_bottom_label(); ForLoop::deinit();}
              ;
 
-ForHead : FORSY IDENTSY ASSIGNSY Expression {delete($4);}
+ForHead : FORSY IDENTSY {ForLoop::get_instance()->id = std::string($2);} ASSIGNSY Expression {ForLoop::get_instance()->emit_init($5); /* delete($5); */ ForLoop::get_instance()->emit_top_label();} ToHead {ForLoop::get_instance()->dir = $7;} Expression {ForLoop::get_instance()->emit_control($9); /* delete($9) */;}
         ;
 
-ToHead : TOSY Expression {delete($2);}
-       | DOWNTOSY Expression{delete($2);}
+ToHead : TOSY {$$=0;}
+       | DOWNTOSY {$$=1;}
        ;
 
 StopStatement : STOPSY
